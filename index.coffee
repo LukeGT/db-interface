@@ -13,10 +13,6 @@ _conversions =
 	'Date': (val) ->
 		val.getTime() / 1000
 
-# Private methods
-
-checkParams = jsonCheck.verify
-
 # Public methods
 
 # Callback must be in the form _executeQuery( query, callback(data, [errors]) )
@@ -44,11 +40,13 @@ checkParams = jsonCheck.verify
 			unless _setupEscaping?
 				callback null, [ "You must setup the escaping method first using the 'setupEscaping' method" ]
 
-			errors = checkParams definition.params, params
+			errors = jsonCheck.verify definition.params, params
 
 			if errors
 				callback null, errors
 				return
+
+			# TODO: Make this actually check the type of each parameter instead of relying on the validation text
 
 			for name, type of definition.params
 				if _conversions[type]?
