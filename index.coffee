@@ -15,6 +15,8 @@ _conversions =
 
 # Public methods
 
+# TODO: Make setup follow something more like the builder pattern
+
 # Callback must be in the form _executeQuery( query, callback(data, [errors]) )
 @setupQuerying = (executeQuery) ->
 	_executeQuery = executeQuery
