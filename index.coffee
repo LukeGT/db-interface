@@ -30,8 +30,8 @@ _conversions =
 	$.extend _conversions, conversions
 
 # Sets up the database interface using the definition passed in
-@setupInterface = (interface) ->
-	_interface = interface
+@setupInterface = (setup) ->
+	_interface = setup
 
 	for method, definition of _interface
 		
