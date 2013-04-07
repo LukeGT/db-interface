@@ -60,4 +60,6 @@ _conversions =
 
 			console.log "Performing #{query}"
 
+			# TODO: Allow users to define multiple database users, and specify which statements are executed by which users
+
 			_executeQuery query, callback
