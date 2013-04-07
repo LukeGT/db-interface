@@ -37,10 +37,12 @@ _conversions =
 		
 		@[method] = do (definition) -> (params, callback) ->
 
+			unless callback?
+				throw new Error "You must define a callback when calling a database interface method"
 			unless _executeQuery?
-				callback null, [ "You must setup the querying method first using the 'setupQuerying' method" ]
-			unless _setupEscaping?
-				callback null, [ "You must setup the escaping method first using the 'setupEscaping' method" ]
+				throw new Error "You must setup the querying method first using the 'setupQuerying' method"
+			unless _escapeString?
+				throw new Erorr "You must setup the escaping method first using the 'setupEscaping' method"
 
 			errors = jsonCheck.verify definition.params, params
 
@@ -54,7 +56,7 @@ _conversions =
 				if _conversions[type]?
 					params[name] = _conversions[type] params[name]
 			
-			query = definition.query.replace /\$([a-z_$][a-z_0-9$]+)/g, (match, group) -> _escapeString params[group]
+			query = definition.query.replace /\$([a-z_$][a-z_0-9$]+)/gi, (match, group) -> _escapeString params[group]
 
 			console.log "Performing #{query}"
 
