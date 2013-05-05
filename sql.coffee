@@ -17,20 +17,20 @@ toEqualsSeparatedPairs = (data) ->
 @select = (location, params) ->
 
   fields = mysql.escape field for field in params.fields
-  conditions = toEqualsSeparatedPairs params.where
+  conditions = toEqualsSeparatedPairs params.filters
 
   "SELECT #{ fields ? "*" } FROM #{ mysql.escape location }#{ if conditions.length " WHERE #{ conditions.join ' AND ' }" else "" };"
 
 @update = (location, params) ->
 
-  updates = toEqualsSeparatedPairs params.updates
-  conditions = toEqualsSeparatedPairs params.where
+  updates = toEqualsSeparatedPairs params.values
+  conditions = toEqualsSeparatedPairs params.filters
 
   "UPDATE #{ mysql.escape location } SET #{ updates.join ',' }#{ if conditions.length " WHERE #{ conditions.join ' AND ' }" else "" };"
 
 @delete = (location, params) ->
 
-  conditions = toEqualsSeparatedPairs params
+  conditions = toEqualsSeparatedPairs params.filters
 
   "DELETE FROM #{ mysql.escape location } WHERE #{ conditions.join ' AND ' };"
 
