@@ -26,7 +26,7 @@ _conversions =
 # query: query(queryString, callback(rows, errors))
 @defineDatabase = (name, language, query) ->
   _databases[name] =
-    language:_languages[language]
+    language: language
     query: query
 
 # Adds conversion rules for going from a Javascript object to a database representation
@@ -45,27 +45,45 @@ _conversions =
 
   for method, definition of methods
     
-    newInterface[method] = do (definition) -> (params, callback) ->
+    newInterface[method] = do (method, definition) -> (input, callback) ->
 
       unless callback?
         throw new Error "You must define a callback when calling a database method"
 
-      errors = jsonCheck.verify definition.params, params
-      return callback null, ("Database interface error: #{error}" for error in errors) if errors
+      unless definition.input
+        throw new Error "No input validation information found for method '#{ method }'.  This must be included.  "
 
-      for name, value of params
+      # Verify that input to method is correct
+      errors = jsonCheck.verify definition.input, input
+
+      if errors
+        return callback null, ("Invalid input to database interface method '#{ method }': #{ error }" for error in errors)
+
+      # Transform the input if needed
+      if definition.transform?
+        input = definition.transform input
+
+      # TODO: This needs to be completely redone
+      for name, value of input
         if _conversions[value.constructor.name]?
-          params[name] = _conversions[value.constructor.name] value
+          input[name] = _conversions[value.constructor.name] value
 
-      unless database.language[definition.operation]?
-        throw new Error "No database operation of the name '#{definition.operation}' exists.  Your options are: #{ key for key of database.language }"
+      language = _languages[database.language]
 
-      queryString = database.language[definition.operation] location, params
+      unless language[definition.operation]?
+        throw new Error "No language operation of the name '#{definition.operation}' exists for the language '#{ database.language }'.  Your options are: #{ key for key of database.language }"
 
-      console.log "Performing: #{queryString}"
+      # Check that the input is valid for the given database operation
+      errors = jsonCheck.verify language[definition.operation].input, input
+
+      if errors
+        return callback null, ("Invalid input to language '#{ languageName }' method '#{ method }': #{error}" for error in errors)
 
       # TODO: Allow users to define multiple database users, and specify which statements are executed by which users
 
+      # Generate and perform the query
+      queryString = language[definition.operation].transform location, input
+      console.log "Performing: #{queryString}"
       database.query queryString, callback
 
   return newInterface

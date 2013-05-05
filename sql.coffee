@@ -4,36 +4,65 @@ toEqualsSeparatedPairs = (data) ->
   for field, value of data
     "#{ mysql.escape field } = #{ mysql.escape value }"
 
-@insert = (location, params) ->
+@insert =
 
-  fields = []
-  values = []
-  for field, value of params.values
-    fields.push mysql.escape field
-    values.push mysql.escape value
+  input:
+    values: 'object'
 
-  "INSERT INTO #{ mysql.escape location } (#{ fields.join ',' }) VALUES (#{ values.join ',' });"
+  transform: (location, input) ->
 
-@select = (location, params) ->
+    fields = []
+    values = []
+    for field, value of input.values
+      fields.push mysql.escape field
+      values.push mysql.escape value
 
-  fields = mysql.escape field for field in params.fields
-  conditions = toEqualsSeparatedPairs params.filters
+    "INSERT INTO #{ mysql.escape location } (#{ fields.join ',' }) VALUES (#{ values.join ',' });"
 
-  "SELECT #{ fields ? "*" } FROM #{ mysql.escape location }#{ if conditions.length " WHERE #{ conditions.join ' AND ' }" else "" };"
+@select =
 
-@update = (location, params) ->
+  input:
+    fields: [ 'string' ]
+    filters: 'object'
 
-  updates = toEqualsSeparatedPairs params.values
-  conditions = toEqualsSeparatedPairs params.filters
+  transform: (location, input) ->
 
-  "UPDATE #{ mysql.escape location } SET #{ updates.join ',' }#{ if conditions.length " WHERE #{ conditions.join ' AND ' }" else "" };"
+    fields = mysql.escape field for field in input.fields
+    conditions = toEqualsSeparatedPairs input.filters
 
-@delete = (location, params) ->
+    "SELECT #{ fields ? "*" } FROM #{ mysql.escape location }#{ if conditions.length " WHERE #{ conditions.join ' AND ' }" else "" };"
 
-  conditions = toEqualsSeparatedPairs params.filters
+@update =
 
-  "DELETE FROM #{ mysql.escape location } WHERE #{ conditions.join ' AND ' };"
+  input:
+    values: 'object'
+    filters: 'object'
 
-@custom = (location, params) ->
+  transform: (location, input) ->
 
-  params.query.replace /\$([a-z_$][a-z_0-9$]+)/gi, (match, group) -> mysql.escape params.vars[group]
+    updates = toEqualsSeparatedPairs input.values
+    conditions = toEqualsSeparatedPairs input.filters
+
+    "UPDATE #{ mysql.escape location } SET #{ updates.join ',' }#{ if conditions.length " WHERE #{ conditions.join ' AND ' }" else "" };"
+
+@delete =
+
+  input:
+    filters: 'object'
+
+  transform: (location, input) ->
+
+    conditions = toEqualsSeparatedPairs input.filters
+
+    "DELETE FROM #{ mysql.escape location } WHERE #{ conditions.join ' AND ' };"
+
+@custom =
+
+  input:
+    query: 'string'
+    vars: 'object'
+
+  transform: (location, input) ->
+
+    input.vars.location = location
+    input.query.replace /\$([a-z_$][a-z_0-9$]+)/gi, (match, group) -> mysql.escape input.vars[group]
