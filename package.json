@@ -1,0 +1,29 @@
+{
+  "name": "db-interface",
+  "version": "0.0.0",
+  "description": "A module for node which allows you to easily create a validated and secure interface to your database",
+  "main": "index.js",
+  "scripts": {
+    "test": "test.js",
+    "prepublish": "coffee -c *.coffee"
+  },
+  "devDependencies": {
+    "coffee-script": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/LukeGT/db-interface.git"
+  },
+  "keywords": [
+    "dao",
+    "database",
+    "validation",
+    "interface",
+    "simple",
+    "easy",
+    "generic"
+  ],
+  "author": "Luke Tsekouras",
+  "license": "BSD",
+  "gitHead": "2243ac41bc39771d4758b1b87f4c4d5527fa5f81"
+}
